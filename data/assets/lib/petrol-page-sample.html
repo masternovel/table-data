@@ -1,0 +1,132 @@
+<!-- ========== CONFIGURATION ========== -->
+<script>
+const CFG={state:"West Bengal",city:"Uttar Dinajpur",stateSlug:"west-bengal",citySlug:"uttar-dinajpur",fuelType:"petrol",fuelLabel:"Petrol",localDemographic:"commuters and agricultural workers",capitalCity:"Kolkata"};
+const today=new Date(),months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const currentDate=months[today.getMonth()]+' '+String(today.getDate()).padStart(2,'0')+', '+today.getFullYear();
+
+const updateDate = id => {
+    const el = document.getElementById(id);
+    if (el) {
+        el.textContent = currentDate;
+        el.classList.remove('fuel-placeholder');
+    }
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        updateDate('paraDate');
+        updateDate('petrolDate');
+    });
+} else {
+    updateDate('paraDate');
+    updateDate('petrolDate');
+}
+</script>
+
+<!-- ========== EXTERNAL RESOURCES ========== -->
+<link rel="stylesheet" href="https://cdn.frisqoo.com/assets/fuel-price-styles.css">
+<script src="https://cdn.frisqoo.com/assets/fuel-price-script.js" defer></script>
+
+<!-- ========== META TAGS ========== -->
+<meta name="content-type" content="price-information">
+<meta name="data-freshness" content="updated-daily">
+
+<!-- ========== CONTENT ========== -->
+<p id="petrolPricePara">
+    Looking for today's petrol price in <strong>Uttar Dinajpur</strong>? As of <strong id="paraDate" class="fuel-placeholder" style="width:90px;">&nbsp;</strong>, the current rate for one litre of petrol is <strong id="paraPrice" class="fuel-placeholder" style="width:70px;">&nbsp;</strong>. This price is a significant factor for the local economy, directly impacting the daily expenses of <strong>commuters and agricultural workers</strong> in the region. Fuel prices in India are based on international crude oil rates and the Rupee-Dollar exchange and are revised daily. Check back every morning for the most accurate rates to help manage your fuel budget.
+    <br><em style="font-size:12px;color:#666; display:block; margin-top:8px;">(Prices are updated daily at 6:00 AM IST)</em>
+</p><!--more-->
+
+<div class="fuel-type-selector">
+  <input type="radio" id="petrolRadio" name="fuelType" value="Petrol" checked>
+  <label for="petrolRadio"><a href="https://www.frisqoo.com/p/petrol-price-in-uttar-dinajpur.html">Petrol</a></label>
+  <input type="radio" id="dieselRadio" name="fuelType" value="Diesel">
+  <label for="dieselRadio"><a href="https://www.frisqoo.com/p/diesel-price-in-uttar-dinajpur.html">Diesel</a></label>
+  <input type="radio" id="cngRadio" name="fuelType" value="CNG">
+  <label for="cngRadio"><a href="https://www.frisqoo.com/p/cng-price-in-uttar-dinajpur.html">CNG</a></label>
+</div>
+
+<div class="fuel-container">
+  <div class="fuel-dropdown"><div class="fuel-box"><select id="stateSelect"><option>Loading states...</option></select></div></div>
+  <div class="fuel-dropdown"><div class="fuel-box"><select id="citySelect"><option>Loading cities...</option></select></div></div>
+  <div class="fuel-box"><div class="fuel-price-content"><span class="fuel-date" id="petrolDate" class="fuel-placeholder" style="width:90px;">&nbsp;</span><span class="fuel-price" id="petrolPriceValue"><span class="fuel-placeholder" style="width:120px;">&nbsp;</span></span></div></div>
+</div>
+
+<h2>Last 10 Days Petrol Price in Uttar Dinajpur</h2>
+<div class="table noLine withBg">
+  <table id="dataTable" class="table-fsortable">
+    <thead><tr><th>Date</th><th>Price</th><th>Price Change</th></tr></thead>
+    <tbody>
+      <tr><td><span class="fuel-placeholder" style="width:80px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:70px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:90px;">&nbsp;</span></td></tr>
+      <tr><td><span class="fuel-placeholder" style="width:80px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:70px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:90px;">&nbsp;</span></td></tr>
+      <tr><td><span class="fuel-placeholder" style="width:80px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:70px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:90px;">&nbsp;</span></td></tr>
+      <tr><td><span class="fuel-placeholder" style="width:80px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:70px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:90px;">&nbsp;</span></td></tr>
+      <tr><td><span class="fuel-placeholder" style="width:80px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:70px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:90px;">&nbsp;</span></td></tr>
+      <tr><td><span class="fuel-placeholder" style="width:80px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:70px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:90px;">&nbsp;</span></td></tr>
+      <tr><td><span class="fuel-placeholder" style="width:80px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:70px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:90px;">&nbsp;</span></td></tr>
+      <tr><td><span class="fuel-placeholder" style="width:80px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:70px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:90px;">&nbsp;</span></td></tr>
+      <tr><td><span class="fuel-placeholder" style="width:80px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:70px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:90px;">&nbsp;</span></td></tr>
+      <tr><td><span class="fuel-placeholder" style="width:80px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:70px;">&nbsp;</span></td><td><span class="fuel-placeholder" style="width:90px;">&nbsp;</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<br /><p class="note"><b>Disclaimer:</b><br />Frisqoo strives to provide accurate, up-to-date fuel prices from official OMC sources, updated daily when possible. However, fuel prices can fluctuate due to regulations, global oil prices, and local markets. While displayed prices may not be the absolute latest, they serve as a valuable guide. We recommend refreshing the page for updates or contacting your nearest gas station for the most current price. Frisqoo is not liable for any inaccuracies.</p><!--more-->
+
+<p>Looking to save money on petrol? Check out our blog post on <a class='extL' href='https://www.frisqoo.com/2024/04/how-to-save-money-on-petrol-in-india.html' target='_blank'>Fuel-Efficiency Techniques!</a></p>
+
+<p>The price history table above provides a clear snapshot of how petrol rates have been trending in <strong>Uttar Dinajpur</strong>. For many in West Bengal, especially our local <strong>commuters and agricultural workers</strong>, even small daily changes can impact monthly budgets. By observing these trends, you can get a better sense of the local market's direction. Below, we answer some of the most frequently asked questions to help you understand the details.</p>
+
+<div id="related-posts-section"><details class="sp toc" open=""><summary data-show="Show all" data-hide="Hide all">Related Posts</summary><div class="toC" id="related-posts"></div></details></div>
+
+<h2 style="text-align: left;">FAQs about Petrol Prices in Uttar Dinajpur</h2>
+<div class="showH">
+    <details class="ac" itemprop="mainEntity" itemscope itemtype="https://schema.org/Question">
+        <summary itemprop="name">What is the petrol price in Uttar Dinajpur today?</summary>
+        <div class="aC" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p id="petrolPriceFAQ" itemprop="text"></p>
+        </div>
+    </details>
+    <details class="ac" itemprop="mainEntity" itemscope itemtype="https://schema.org/Question">
+        <summary itemprop="name">Is the petrol price in Uttar Dinajpur going up or down today?</summary>
+        <div class="aC" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p id="faqTrendAnswer" itemprop="text"></p>
+        </div>
+    </details>
+    <details class="ac" itemprop="mainEntity" itemscope itemtype="https://schema.org/Question">
+        <summary itemprop="name">What was the petrol price in Uttar Dinajpur yesterday?</summary>
+        <div class="aC" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p id="faqYesterdayAnswer" itemprop="text"></p>
+        </div>
+    </details>
+    <details class="ac" itemprop="mainEntity" itemscope itemtype="https://schema.org/Question" id="faqComparisonDetails">
+        <summary itemprop="name">How does the petrol price in Uttar Dinajpur compare to other cities in West Bengal?</summary>
+        <div class="aC" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p id="faqComparisonAnswer" itemprop="text"></p>
+        </div>
+    </details>
+    <details class="ac" itemprop="mainEntity" itemscope itemtype="https://schema.org/Question">
+        <summary itemprop="name">What time do petrol prices change in Uttar Dinajpur?</summary>
+        <div class="aC" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text">Petrol prices across India, including in <strong>Uttar Dinajpur</strong>, are revised every morning at <strong>6:00 AM IST</strong>. The price set at 6:00 AM remains fixed for the next 24 hours.</p>
+        </div>
+    </details>
+    <details class="ac" itemprop="mainEntity" itemscope itemtype="https://schema.org/Question">
+        <summary itemprop="name">Where can I find petrol stations in Uttar Dinajpur?</summary>
+        <div class="aC" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text">To see a live map of all petrol stations, you can use Google Maps. Clicking this link will open a search for <strong><a href="https://www.google.com/maps/search/?api=1&query=petrol+pumps+in+Uttar+Dinajpur,+West+Bengal" target="_blank" rel="noopener noreferrer">"petrol pumps in Uttar Dinajpur"</a></strong>.</p>
+        </div>
+    </details>
+    <details class="ac" itemprop="mainEntity" itemscope itemtype="https://schema.org/Question">
+        <summary itemprop="name">How can I check live petrol prices in Uttar Dinajpur online?</summary>
+        <div class="aC" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text">The best way to check live petrol prices for <strong>Uttar Dinajpur</strong> is to use a reliable daily price tracker like this page on <strong>Frisqoo</strong>, which is updated every morning at 6:00 AM. You can also use the official apps from Oil Marketing Companies.</p>
+        </div>
+    </details>
+    <details class="ac" itemprop="mainEntity" itemscope itemtype="https://schema.org/Question">
+        <summary itemprop="name">How are petrol prices determined in India?</summary>
+        <div class="aC" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+            <p itemprop="text">Petrol prices are determined by a complex formula involving crude oil costs, taxes, and dealer commissions. For a complete explanation, please read our <strong><a href="[URL_TO_YOUR_HUB_PAGE]">detailed guide on how fuel prices are calculated in India</a>.</strong></p>
+        </div>
+    </details>
+</div>
