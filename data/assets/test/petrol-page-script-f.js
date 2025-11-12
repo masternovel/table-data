@@ -1,0 +1,407 @@
+/* Fuel Price Script v1.2 - Performance Optimized */
+(function(){"use strict";
+
+/* CFG Check */
+if(typeof CFG==="undefined"){console.error("CFG not found");return}
+
+/* Config */
+const{state:STATE,city:CITY,stateSlug:STATE_SLUG,citySlug:CITY_SLUG,fuelType:FUEL_TYPE,fuelLabel:FUEL_LABEL,capitalCity:CAPITAL_CITY}=CFG;
+
+/* Cache */
+const cache={};
+const fetchJSON=url=>cache[url]||(cache[url]=fetch(url).then(r=>r.json()));
+
+/* Utilities */
+const goToURL=sel=>{const url=sel.options[sel.selectedIndex].dataset.url;if(url&&url!=="#")location.href=url};
+const formatDate=d=>{const dt=new Date(d);return`${months[dt.getMonth()]} ${String(dt.getDate()).padStart(2,"0")}, ${dt.getFullYear()}`};
+const formatDateShort=d=>{const dt=new Date(d);return`${months[dt.getMonth()]} ${String(dt.getDate()).padStart(2,"0")}`};
+const getPriceIndicator=change=>({arrow:change>0?"▲":change<0?"▼":"■",color:change>0?"red":change<0?"green":"black"});
+const updateEl=(id,content,removeLoader=true)=>{
+  const el=document.getElementById(id);
+  if(el){
+    if(typeof content==="string")el.innerHTML=content;else el.textContent=content;
+    if(removeLoader)el.classList.remove("fuel-placeholder");
+  }
+};
+
+/* Browser Back Fix */
+window.addEventListener("pageshow",e=>{
+  if(e.persisted||window.performance?.navigation.type===2){
+    const stateEl=document.getElementById("stateSelect");
+    const cityEl=document.getElementById("citySelect");
+    if(stateEl)stateEl.value=STATE;
+    if(cityEl)cityEl.value=CITY;
+    
+    // Fix fuel type radio button
+    const fuelRadio=document.querySelector(`input[type=radio][name="fuelType"][value="${FUEL_LABEL}"]`);
+    if(fuelRadio)fuelRadio.checked=true;
+  }
+},{passive:true});
+
+/* Schema Injection */
+const injectSchema=priceData=>{
+  requestIdleCallback(()=>{
+    document.querySelectorAll('script[type="application/ld+json"]').forEach(el=>{
+      if(!el.id||el.id!=="frisqoo-custom-schema")el.remove();
+    });
+    
+    const pageUrl=location.href;
+    const org={"@type":"Organization",name:"Frisqoo",url:"https://www.frisqoo.com/"};
+    let temporal="";
+    
+    if(priceData?.length>1){
+      const startDate=new Date(priceData[priceData.length-1][0]).toISOString().split("T")[0];
+      const endDate=new Date().toISOString().split("T")[0];
+      temporal=`${startDate}/${endDate}`;
+    }
+    
+    const schema={
+      "@context":"https://schema.org",
+      "@graph":[
+        {
+          "@type":"WebPage",
+          "@id":`${pageUrl}#webpage`,
+          name:`${FUEL_LABEL} Price in ${CITY} - Today (${currentDate})`,
+          url:pageUrl,
+          description:`Get the latest ${FUEL_LABEL.toLowerCase()} price in ${CITY} for ${currentDate}. This page provides a complete daily price update, a 10-day historical price trend, a state-wide price comparison, and answers to frequently asked questions.`,
+          mainEntity:{"@id":`${pageUrl}#dataset`}
+        },
+        {
+          "@type":"Dataset",
+          "@id":`${pageUrl}#dataset`,
+          mainEntityOfPage:{"@id":`${pageUrl}#webpage`},
+          name:`Daily ${FUEL_LABEL} Price History and Today's Rate for ${CITY}`,
+          description:`A 10-day price history dataset for ${FUEL_LABEL.toLowerCase()} in ${CITY}, ${STATE}.`,
+          keywords:[`${FUEL_LABEL} price in ${CITY}`,`today ${FUEL_LABEL.toLowerCase()} rate ${CITY}`,`${CITY} ${FUEL_LABEL.toLowerCase()} price`,"fuel price","daily price update"],
+          license:"https://creativecommons.org/licenses/by/4.0/",
+          spatialCoverage:{"@type":"Place",name:`${CITY}, ${STATE}`},
+          temporalCoverage:temporal,
+          creator:org,
+          provider:org
+        },
+        {
+          "@type":"FAQPage",
+          mainEntity:Array.from(document.querySelectorAll(".showH > details")).map(faq=>({
+            "@type":"Question",
+            name:faq.querySelector("summary").textContent,
+            acceptedAnswer:{"@type":"Answer",text:faq.querySelector(".aC p").innerHTML}
+          }))
+        }
+      ]
+    };
+    
+    const script=document.createElement("script");
+    script.type="application/ld+json";
+    script.id="frisqoo-custom-schema";
+    script.text=JSON.stringify(schema);
+    document.head.appendChild(script);
+  },{timeout:2000});
+};
+
+/* FAQ Comparison */
+const updateComparisonFAQ=stateData=>{
+  if(!stateData||stateData.length<2||!CAPITAL_CITY){
+    const el=document.getElementById("faqComparisonDetails");
+    if(el)el.style.display="none";
+    return;
+  }
+  
+  let currentPrice="N/A",capitalPrice="N/A";
+  let cheapest={price:Infinity,cities:[]},expensive={price:-Infinity,cities:[]};
+  
+  for(let i=1;i<stateData.length;i++){
+    const[city,price]=stateData[i];
+    const priceNum=parseFloat(String(price).replace(/[^0-9.-]/g,""));
+    
+    if(city===CITY)currentPrice=price;
+    if(city===CAPITAL_CITY)capitalPrice=price;
+    
+    if(!isNaN(priceNum)){
+      if(priceNum<cheapest.price)cheapest={price:priceNum,cities:[city]};
+      else if(priceNum===cheapest.price)cheapest.cities.push(city);
+      
+      if(priceNum>expensive.price)expensive={price:priceNum,cities:[city]};
+      else if(priceNum===expensive.price)expensive.cities.push(city);
+    }
+  }
+  
+  const capitalComp=CITY===CAPITAL_CITY
+    ?`As the state capital, this price serves as a key benchmark for other cities in ${STATE}.`
+    :`For comparison, the price in the state capital <strong>${CAPITAL_CITY}</strong> is <strong>${capitalPrice}</strong>.`;
+  
+  updateEl("faqComparisonAnswer",
+    `In <strong>${CITY}</strong>, today's ${FUEL_LABEL.toLowerCase()} price is <strong>${currentPrice}</strong>. ${capitalComp}<br><br>Currently, the cheapest ${FUEL_LABEL.toLowerCase()} in ${STATE} is <strong>₹${cheapest.price.toFixed(2)}</strong> in ${cheapest.cities.join(" and ")}, while the most expensive is <strong>₹${expensive.price.toFixed(2)}</strong> in ${expensive.cities.join(" and ")}.<br><br>For a full city-by-city breakdown, <strong><a href="https://www.frisqoo.com/p/${FUEL_TYPE}-price-in-${STATE_SLUG}.html">view the complete ${STATE} ${FUEL_LABEL} price list</a></strong>.`,
+    false
+  );
+};
+
+/* Main Init */
+const init=async()=>{
+  try{
+    /* Fetch all data in parallel */
+    const[statesData,citiesData,stateData,cityData]=await Promise.all([
+      fetchJSON(`https://cdn.frisqoo.com/utilities/${FUEL_TYPE}/states.json`),
+      fetchJSON(`https://cdn.frisqoo.com/utilities/${FUEL_TYPE}/${STATE_SLUG}.json`),
+      fetchJSON(`https://cdn.frisqoo.com/${FUEL_TYPE}/${STATE_SLUG}.json`),
+      fetchJSON(`https://cdn.frisqoo.com/${FUEL_TYPE}/${STATE_SLUG}/${CITY_SLUG}.json`)
+    ]);
+    
+    /* Populate Dropdowns */
+    const stateSelect=document.getElementById("stateSelect");
+    const citySelect=document.getElementById("citySelect");
+    
+    if(stateSelect){
+      stateSelect.innerHTML=statesData.map(s=>
+        `<option value="${s.name}" data-url="${s.url}"${s.name===STATE?" selected":""}>${s.name}</option>`
+      ).join("");
+      stateSelect.addEventListener("change",function(){goToURL(this)},{passive:true});
+    }
+    
+    if(citySelect){
+      citySelect.innerHTML=citiesData.map(c=>
+        `<option value="${c.name}" data-url="${c.url}"${c.name===CITY?" selected":""}>${c.name}</option>`
+      ).join("");
+      citySelect.addEventListener("change",function(){goToURL(this)},{passive:true});
+    }
+    
+    /* Update Price Info */
+    const currentCityData=stateData.find((row,idx)=>idx>0&&row[0].trim().toLowerCase()===CITY.trim().toLowerCase());
+    
+    if(currentCityData){
+      const[,price,changeStr]=currentCityData;
+      const changeNum=parseFloat(changeStr.replace(/[^0-9.-]/g,""));
+      const{arrow,color}=getPriceIndicator(changeNum);
+      
+      updateEl("paraPrice",price);
+      updateEl("petrolPriceValue",
+        `<span style="font-size:19px;font-weight:bold">${price}</span> <span style="font-size:14px">/ltr</span><span style="font-size:14px">(₹${Math.abs(changeNum).toFixed(2)} <span style="font-weight:bold;color:${color}">${arrow}</span>)</span>`,
+        false
+      );
+      updateEl("petrolPriceFAQ",`The ${FUEL_LABEL.toLowerCase()} price in ${CITY} is <strong>${price}</strong> per litre. Prices are updated daily at 6:00 AM IST.`,false);
+      
+      const trendText=changeNum>0
+        ?`has <strong style="color:red;">increased</strong> by ₹${Math.abs(changeNum).toFixed(2)} since yesterday.`
+        :changeNum<0
+        ?`has <strong style="color:green;">decreased</strong> by ₹${Math.abs(changeNum).toFixed(2)} since yesterday.`
+        :`has <strong style="color:black;">remained the same</strong> compared to yesterday.`;
+      
+      updateEl("faqTrendAnswer",`Compared to yesterday, the ${FUEL_LABEL.toLowerCase()} price in <strong>${CITY}</strong> ${trendText}`,false);
+    }
+    
+    /* Update Table */
+    const tableBody=document.querySelector("#dataTable tbody");
+    if(cityData?.length>1){
+      const frag=document.createDocumentFragment();
+      const template=document.createElement("template");
+      
+      template.innerHTML=cityData.slice(1).map(row=>{
+        const changeNum=parseFloat(String(row[2]).replace(/[^0-9.-]/g,""));
+        const{arrow,color}=getPriceIndicator(changeNum);
+        return`<tr><td>${formatDate(row[0])}</td><td>${row[1]}</td><td>${row[2]} <span style="font-weight:bold;color:${color}">${arrow}</span></td></tr>`;
+      }).join("");
+      
+      frag.appendChild(template.content);
+      tableBody.innerHTML="";
+      tableBody.appendChild(frag);
+      
+      updateEl("faqYesterdayAnswer",`Yesterday, on <strong>${formatDate(cityData[1][0])}</strong>, the ${FUEL_LABEL.toLowerCase()} price in <strong>${CITY}</strong> was <strong>${cityData[1][1]}</strong> per litre.`,false);
+    }else{
+      tableBody.innerHTML='<tr><td colspan="3" style="text-align:center!important;padding:20px;">Price history is currently unavailable.</td></tr>';
+    }
+    
+    /* Render Chart (Lazy load Chart.js if needed) */
+    if(cityData?.length>1){
+      const renderChart=()=>{
+        if(typeof Chart==="undefined"){
+          setTimeout(renderChart,100);
+          return;
+        }
+        
+        const currentCityRow=stateData.find((row,idx)=>idx>0&&row[0].trim().toLowerCase()===CITY.trim().toLowerCase());
+        let chartData=[];
+        let selectedDays=7;
+        let chart=null;
+        
+        const historicalUrl=`https://cdn.frisqoo.com/historical/${FUEL_TYPE}/${STATE_SLUG}/${CITY_SLUG}.json`;
+        
+        fetchJSON(historicalUrl)
+          .then(data=>{
+            if(data&&Array.isArray(data)&&data.length>1){
+              chartData=data.slice(1).reverse();
+            }else{
+              chartData=cityData.slice(1).reverse();
+            }
+          })
+          .catch(()=>{
+            chartData=cityData.slice(1).reverse();
+          })
+          .finally(()=>{
+            /* Add today's price if not present */
+            if(currentCityRow&&chartData.length>0){
+              const lastDate=new Date(chartData[chartData.length-1][0]);
+              const today=new Date();
+              
+              if(today.toDateString()!==lastDate.toDateString()){
+                const todayStr=`${months[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
+                const change=currentCityRow[2]?currentCityRow[2].replace(/[^0-9.-]/g,""):"0.00";
+                chartData.push([todayStr,currentCityRow[1],change]);
+              }
+            }
+            
+            const drawChart=(data,days)=>{
+              let filtered=data;
+              if(days!=="all"&&days>0)filtered=data.slice(-days);
+              
+              if(chart)chart.destroy();
+              
+              const isDark=document.body.classList.contains("drK");
+              
+              chart=new Chart(document.getElementById("priceChart"),{
+                type:"line",
+                data:{
+                  labels:filtered.map(d=>formatDateShort(d[0])),
+                  datasets:[{
+                    label:`${FUEL_LABEL} Price (₹/ltr)`,
+                    data:filtered.map(d=>parseFloat(String(d[1]).replace(/[^0-9.]/g,""))),
+                    borderColor:"#4a90e2",
+                    backgroundColor:"rgba(74,144,226,0.1)",
+                    borderWidth:2,
+                    pointRadius:filtered.length>90?0:4,
+                    pointBackgroundColor:"#4a90e2",
+                    pointBorderColor:"#fff",
+                    pointBorderWidth:2,
+                    tension:0.3,
+                    fill:true
+                  }]
+                },
+                options:{
+                  responsive:true,
+                  maintainAspectRatio:false,
+                  plugins:{
+                    legend:{
+                      display:true,
+                      position:"top",
+                      labels:{font:{size:12},color:isDark?"#e0e0e0":"#333"}
+                    },
+                    tooltip:{
+                      backgroundColor:"rgba(0,0,0,0.8)",
+                      titleColor:"#fff",
+                      bodyColor:"#fff",
+                      borderColor:"#4a90e2",
+                      borderWidth:1,
+                      padding:10,
+                      displayColors:false,
+                      callbacks:{
+                        title:ctx=>formatDate(filtered[ctx[0].dataIndex][0]),
+                        label:ctx=>{
+                          const idx=ctx.dataIndex;
+                          const price=filtered[idx][1];
+                          const change=parseFloat(filtered[idx][2]);
+                          return[
+                            `Price: ${price}/ltr`,
+                            `Change: ${change>0?`+₹${Math.abs(change).toFixed(2)}`:change<0?`-₹${Math.abs(change).toFixed(2)}`:"No change"}`
+                          ];
+                        }
+                      }
+                    }
+                  },
+                  scales:{
+                    x:{
+                      grid:{display:false},
+                      ticks:{
+                        font:{size:11},
+                        color:isDark?"#b0b0b0":"#666",
+                        maxRotation:45,
+                        minRotation:0,
+                        autoSkip:true,
+                        maxTicksLimit:filtered.length>90?12:15
+                      }
+                    },
+                    y:{
+                      beginAtZero:false,
+                      grid:{color:isDark?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.05)"},
+                      ticks:{
+                        font:{size:11},
+                        color:isDark?"#b0b0b0":"#666",
+                        callback:val=>`₹${val.toFixed(2)}`
+                      }
+                    }
+                  }
+                }
+              });
+            };
+            
+            drawChart(chartData,selectedDays);
+            
+            /* Timeframe buttons */
+            document.querySelectorAll(".timeframe-btn").forEach(btn=>{
+              btn.addEventListener("click",function(){
+                document.querySelectorAll(".timeframe-btn").forEach(b=>b.classList.remove("active"));
+                this.classList.add("active");
+                
+                const days=this.dataset.days;
+                selectedDays=days==="all"?"all":parseInt(days);
+                drawChart(chartData,selectedDays);
+              });
+            });
+            
+            /* Update ALL button if data is less than 365 days */
+            if(chartData.length<365){
+              const allBtn=document.querySelector('.timeframe-btn[data-days="all"]');
+              if(allBtn&&chartData.length>0)allBtn.textContent=`${chartData.length}D`;
+            }
+          });
+      };
+      
+      renderChart();
+    }
+    
+    /* Generate FAQ & Schema */
+    updateComparisonFAQ(stateData);
+    injectSchema(cityData);
+    
+  }catch(err){
+    console.error("Init error:",err);
+  }
+  
+  /* Low Priority Tasks */
+  requestIdleCallback(()=>{
+    /* Update page title */
+    const titleEl=document.querySelector(".pTtl > span");
+    if(titleEl){
+      const titleText=titleEl.innerText.split(" - Today")[0];
+      titleEl.innerHTML=`${titleText} - Today <span style="font-size:18px">(${currentDate})</span>`;
+    }
+    
+    /* Load related posts */
+    fetchJSON("https://www.frisqoo.com/feeds/posts/summary/-/Fuel?alt=json&max-results=5")
+      .then(data=>{
+        const posts=(data.feed?.entry||[]).map((entry,i)=>
+          `<p style="display:flex;align-items:center;margin:0"><span>${i+1}. </span><a href="${entry.link.find(l=>l.rel==="alternate").href}" target="_blank" style="margin-left:5px">${entry.title.$t}</a></p>`
+        ).join("");
+        
+        const container=document.getElementById("related-posts");
+        if(container)container.innerHTML=posts;
+      })
+      .catch(()=>{});
+  },{timeout:3000});
+};
+
+/* Execute */
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",init,{once:true,passive:true});
+}else{
+  init();
+}
+
+/* Radio Button Navigation */
+document.addEventListener("DOMContentLoaded",()=>{
+  document.querySelectorAll('input[type=radio][name="fuelType"]').forEach(radio=>{
+    radio.addEventListener("change",()=>{
+      const link=radio.nextElementSibling?.querySelector("a");
+      if(link)link.click();
+    },{passive:true});
+  });
+},{once:true,passive:true});
+
+})();
