@@ -237,7 +237,7 @@ const init=async()=>{
         const{arrow:dArrow,color:dColor}=getPriceIndicator(domestic.change);
         const{arrow:cArrow,color:cColor}=getPriceIndicator(commercial.change);
         
-        return`<tr><td>${formatMonthYear(date)}</td><td style="text-align:right">${domestic.price} <span style="font-size:13px">(₹${formatChangeWithSign(domestic.change)} <span style="font-weight:bold;color:${dColor}">${dArrow}</span>)</span></td><td style="text-align:right">${commercial.price} <span style="font-size:13px">(₹${formatChangeWithSign(commercial.change)} <span style="font-weight:bold;color:${cColor}">${cArrow}</span>)</span></td></tr>`;
+        return`<tr><td>${formatMonthYear(date)}</td><td style="text-align:right">${domestic.price} <span style="font-size:13px">(${formatChangeWithSign(domestic.change)} <span style="font-weight:bold;color:${dColor}">${dArrow}</span>)</span></td><td style="text-align:right">${commercial.price} <span style="font-size:13px">(${formatChangeWithSign(commercial.change)} <span style="font-weight:bold;color:${cColor}">${cArrow}</span>)</span></td></tr>`;
       }).join("");
       
       frag.appendChild(template.content);
