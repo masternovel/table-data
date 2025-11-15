@@ -21,7 +21,8 @@ table.table-fsortable td{padding:12px;font-size:15px;color:#333;word-break:break
 table.table-fsortable td:first-child{font-weight:500;color:#333}
 table.table-fsortable td:first-child a{color:#1a73e8;text-decoration:none;font-weight:600}
 table.table-fsortable td:first-child a:hover{text-decoration:underline;color:#0d47a1}
-table.table-fsortable td:nth-child(2),table.table-fsortable td:nth-child(3){text-align:right!important;font-weight:500;color:#000}
+table.table-fsortable td:nth-child(2){text-align:right!important;font-weight:700;color:#000}
+table.table-fsortable td:nth-child(3){text-align:right!important;font-weight:500;min-width:100px}
 table.table-fsortable td:nth-child(2) span,table.table-fsortable td:nth-child(3) span{display:inline-block;margin-left:6px;font-size:14px}
 
 /* ===== SKELETON LOADER ===== */
@@ -43,7 +44,7 @@ table.table-fsortable td:nth-child(2) span,table.table-fsortable td:nth-child(3)
 .drK table.table-fsortable td{color:#e0e0e0}
 .drK table.table-fsortable td:first-child a{color:#64b5f6}
 .drK table.table-fsortable td:first-child a:hover{color:#90caf9}
-.drK table.table-fsortable td:nth-child(2),table.table-fsortable td:nth-child(3){color:#fff}
+.drK table.table-fsortable td:nth-child(2){color:#fff}
 
 /* ===== RESPONSIVE STYLES ===== */
 @media (max-width:768px){
@@ -56,7 +57,8 @@ table.table-fsortable td:nth-child(2) span,table.table-fsortable td:nth-child(3)
   table.table-fsortable{min-height:500px}
   table.table-fsortable th{padding:12px 8px;font-size:12px}
   table.table-fsortable td{padding:10px 8px;font-size:13px}
-  table.table-fsortable td:nth-child(2),table.table-fsortable td:nth-child(3){font-size:13px}
+  table.table-fsortable td:nth-child(2){font-size:14px}
+  table.table-fsortable td:nth-child(3){min-width:85px;font-size:13px}
   table.table-fsortable td:nth-child(2) span,table.table-fsortable td:nth-child(3) span{font-size:13px;margin-left:4px}
   h2{font-size:18px;margin:15px 0 10px}
 }
@@ -66,5 +68,5 @@ table.table-fsortable td:nth-child(2) span,table.table-fsortable td:nth-child(3)
   table.table-fsortable{min-height:550px}
   table.table-fsortable th{padding:10px 6px;font-size:11px}
   table.table-fsortable td{padding:9px 6px;font-size:12px}
-  table.table-fsortable td:nth-child(2),table.table-fsortable td:nth-child(3){font-size:12px}
+  table.table-fsortable td:nth-child(2){font-size:13px}
 }
